@@ -1,0 +1,56 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+class AppTheme {
+  static final primaryColor = Color(0xffC67C4E);
+  static final colorScheme = ColorScheme.fromSeed(seedColor: primaryColor);
+  static final textTheme = GoogleFonts.soraTextTheme();
+  static final themeData = ThemeData(
+    scaffoldBackgroundColor: Color(0xffF9F9F9),
+    colorScheme: ColorScheme.fromSeed(seedColor: Color(0xffC67C4E)),
+    textTheme: textTheme.copyWith(),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: Color(0xffC67C4E),
+        minimumSize: Size(0, 56),
+        textStyle: textTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: Colors.white,
+      selectedItemColor: primaryColor,
+      unselectedItemColor: Color(0xffA2A2A2),
+      elevation: 0,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      type: BottomNavigationBarType.fixed,
+      landscapeLayout: BottomNavigationBarLandscapeLayout.linear,
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: Color(0xffEDEDED),
+      labelStyle: textTheme.labelLarge?.copyWith(
+        fontSize: 14,
+        color: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return const Color(0xff313131);
+        }),
+        fontWeight: FontWeight.bold,
+      ),
+      selectedColor: Color(0xffC67C4E),
+      secondarySelectedColor: Color(0xffC67C4E),
+      labelPadding: EdgeInsets.symmetric(
+        horizontal: 5,
+        vertical: 0,
+      ),
+      side: BorderSide.none,
+      showCheckmark: false,
+    ),
+  );
+}
