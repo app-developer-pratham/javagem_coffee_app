@@ -1,12 +1,13 @@
+import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_iconly_plus/iconly.dart';
+import 'package:javagem_coffee_app/core/app_theme.dart';
+import 'package:javagem_coffee_app/models/coffee.dart';
 import 'package:javagem_coffee_app/widgets/app_bottom_navigation_bar.dart';
 import 'package:javagem_coffee_app/widgets/category_choice_chips.dart';
+import 'package:javagem_coffee_app/widgets/coffee_card.dart';
 import 'package:javagem_coffee_app/widgets/navbar_location_selector.dart';
 import 'package:javagem_coffee_app/widgets/navbar_search_widget.dart';
-import 'package:javagem_coffee_app/widgets/navigation_icon.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,11 +21,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const double spacing = 24;
     const double bannerAspectRatio = 2.336;
     final double screenWidth = MediaQuery.sizeOf(context).width;
-    final double bannerWidth = screenWidth - (spacing * 2);
+    final double bannerWidth = screenWidth - (AppTheme.spacing * 2);
     final double dynamicBannerHeight = bannerWidth / bannerAspectRatio;
+    // Total bottom clear zone = system home bar inset + nav bar height + breathing margin
+    final double bottomInset = MediaQuery.paddingOf(context).bottom;
+    final double totalBottomPadding = bottomInset + 90.0 + AppTheme.spacing;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
@@ -37,11 +40,10 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           currentIndex: selectedIndex,
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            spacing: spacing,
-            children: [
-              Stack(
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Stack(
                 children: [
                   // Background
                   Positioned(
@@ -67,9 +69,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     bottom: false,
                     child: Padding(
                       padding: EdgeInsets.only(
-                        right: spacing,
-                        left: spacing,
-                        top: spacing,
+                        right: AppTheme.spacing,
+                        left: AppTheme.spacing,
+                        top: AppTheme.spacing,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,11 +79,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           NavbarLocationSelector(),
                           NavbarSearchWidget(),
-                          Image.asset(
-                            "assets/images/promo_banner.png",
-                            height: dynamicBannerHeight,
-                            width: bannerWidth,
-                            fit: BoxFit.cover,
+                          ClipSmoothRect(
+                            radius: const SmoothBorderRadius.all(
+                              SmoothRadius(
+                                cornerRadius:
+                                    16, // Match your Figma corner radius
+                                cornerSmoothing: 0.6, // 0.6 for standard iOS/Figma squircle, or 1.0 for full smooth
+                              ),
+                            ),
+                            child: Image.asset(
+                              "assets/images/promo_banner.png",
+                              height: dynamicBannerHeight,
+                              width: bannerWidth,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ],
                       ),
@@ -89,9 +100,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              CategoryChoiceChips(),
-            ],
-          ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: AppTheme.spacing),
+                child: CategoryChoiceChips(),
+              ),
+            ),
+            // 3. Lazy-loading Coffee Grid
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                AppTheme.spacing,
+                AppTheme.spacing,
+                AppTheme.spacing,
+                totalBottomPadding,
+              ), // extra bottom padding for floating bottom bar
+              sliver: SliverGrid.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.655, // Adjust to fit card dimensions
+                ),
+                itemCount: dummyCoffeeList.length,
+                itemBuilder: (context, index) {
+                  return CoffeeCard(coffee: dummyCoffeeList[index]);
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/material.dart';
 
 class CategoryChoiceChips extends StatefulWidget {
@@ -32,6 +33,11 @@ class _CategoryChoiceChipsState extends State<CategoryChoiceChips> {
         children: [
           for (int i = 0; i < categories.length; i++)
             FilterChip(
+              shape: SmoothRectangleBorder(
+                borderRadius: SmoothBorderRadius.all(
+                  SmoothRadius(cornerRadius: 8, cornerSmoothing: 1),
+                ),
+              ),
               label: Text(categories[i]),
               selected: selectedIndex == i,
               onSelected: (value) {

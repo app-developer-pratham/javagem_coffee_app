@@ -1,7 +1,9 @@
+import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
+  // Colors
   static final primaryColor = Color(0xffC67C4E);
   static final colorScheme = ColorScheme.fromSeed(seedColor: primaryColor);
   static final textTheme = GoogleFonts.soraTextTheme();
@@ -19,6 +21,17 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
+      ),
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(
+        shape: SmoothRectangleBorder(
+          borderRadius: SmoothBorderRadius.all(
+            SmoothRadius(cornerRadius: 12, cornerSmoothing: 1),
+          ),
+        ),
+        backgroundColor: Color(0xffC67C4E),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
@@ -52,5 +65,9 @@ class AppTheme {
       side: BorderSide.none,
       showCheckmark: false,
     ),
+    bottomAppBarTheme: BottomAppBarThemeData(height: 85, color: Colors.white),
   );
+
+  // Dimensions
+  static const double spacing = 24;
 }

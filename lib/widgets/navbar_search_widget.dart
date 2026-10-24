@@ -1,3 +1,4 @@
+import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly_plus/iconly.dart';
 
@@ -12,28 +13,39 @@ class NavbarSearchWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: TextField(
-              style: TextStyle(
-                color: Colors.white,
+            child: Container(
+              decoration: ShapeDecoration(
+                color: Color(0xff2A2A2A),
+                shape: SmoothRectangleBorder(
+                  borderRadius: SmoothBorderRadius.all(
+                    SmoothRadius(
+                      cornerRadius: 12,
+                      cornerSmoothing: 1,
+                    ),
+                  ),
+                ),
               ),
-              decoration: InputDecoration(
-                fillColor: Color(0xff2A2A2A),
-                filled: true,
-                contentPadding: EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 12,
-                ),
-                hintText: "Search Coffee",
-                hintStyle: TextStyle(
-                  color: Color(0xffA2A2A2),
-                ),
-                prefixIcon: Icon(
-                  IconlyLight.search,
+              child: TextField(
+                style: TextStyle(
                   color: Colors.white,
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 12,
+                  ),
+                  hintText: "Search Coffee",
+                  hintStyle: TextStyle(
+                    color: Color(0xffA2A2A2),
+                  ),
+                  prefixIcon: Icon(
+                    IconlyLight.search,
+                    color: Colors.white,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
             ),
@@ -41,11 +53,6 @@ class NavbarSearchWidget extends StatelessWidget {
           AspectRatio(
             aspectRatio: 1,
             child: IconButton.filled(
-              style: IconButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
               icon: Icon(IconlyLight.filter),
               onPressed: () {},
             ),

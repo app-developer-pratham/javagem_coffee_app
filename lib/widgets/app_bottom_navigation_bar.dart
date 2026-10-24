@@ -1,3 +1,4 @@
+import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly_plus/iconly.dart';
 import 'package:javagem_coffee_app/widgets/navigation_icon.dart';
@@ -49,17 +50,14 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
     final size = MediaQuery.sizeOf(context);
     return Theme(
       data: theme.copyWith(splashFactory: NoSplash.splashFactory),
-      child: ClipRRect(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
+      child: ClipSmoothRect(
+        radius: const SmoothBorderRadius.only(
+          topLeft: SmoothRadius(cornerRadius: 30, cornerSmoothing: 0.6),
+          topRight: SmoothRadius(cornerRadius: 30, cornerSmoothing: 0.6),
         ),
         child: BottomAppBar(
-          color: theme.bottomNavigationBarTheme.backgroundColor,
-          shape: CircularNotchedRectangle(),
-          notchMargin: 10,
           padding: EdgeInsets.symmetric(
             horizontal: size.width * 0.1,
-            vertical: 0,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

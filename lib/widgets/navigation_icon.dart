@@ -21,6 +21,10 @@ class NavigationIcon extends StatelessWidget {
     return SizedBox.square(
       dimension: size.height * 0.08,
       child: IconButton(
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shape: CircleBorder(),
+        ),
         onPressed: onTap,
         icon: Column(
           mainAxisSize: MainAxisSize.min,
