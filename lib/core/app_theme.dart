@@ -3,8 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Colors
-  static final primaryColor = Color(0xffC67C4E);
+  // Colors (Design Tokens from Figma Foundation)
+  static const Color primaryColor = Color(0xffC67C4E); // Brown/Normal
+  static const Color primaryLightColor = Color(0xffF9F2ED); // Brown/Light
+  static const Color surfaceLightColor = Color(0xffF9F9F9); // Surface/Light
+  static const Color surfaceWhiteColor = Color(0xffFFFFFF); // Surface/White
+  static const Color surfaceActiveColor = Color(
+    0xffE3E3E3,
+  ); // Surface/Light :active
+  static const Color textDarkColor = Color(0xff242424); // Grey/Normal :active
+  static const Color textHoverColor = Color(0xff2A2A2A); // Grey/Normal :hover
+  static const Color textGreyHoverColor = Color(
+    0xff909090,
+  ); // Grey/Light :hover
+  static const Color textMutedColor = Color(0xffA2A2A2); // Grey/Lighter
+  static const Color iconBadgeBgColor = Color(
+    0x59EDEDED,
+  ); // rgba(237, 237, 237, 0.35)
+  static const Color starColor = Color(0xffFBBE21);
+
   static final colorScheme = ColorScheme.fromSeed(seedColor: primaryColor);
   static final textTheme = GoogleFonts.soraTextTheme();
   static final themeData = ThemeData(
@@ -69,8 +86,16 @@ class AppTheme {
       showCheckmark: false,
     ),
     bottomAppBarTheme: BottomAppBarThemeData(height: 85, color: Colors.white),
+    cupertinoOverrideTheme: MaterialBasedCupertinoThemeData(
+      materialTheme: ThemeData(
+        textTheme: textTheme,
+      ),
+    ),
   );
 
   // Dimensions
   static const double spacing = 24;
+  static const double promoBannerAspectRatio = 2.336;
+  static const double productCardAspectRatio = 0.655;
+  static const double detailImageAspectRatio = 327 / 202;
 }
