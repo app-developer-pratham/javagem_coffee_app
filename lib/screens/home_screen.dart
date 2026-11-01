@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 24,
+                        spacing: AppTheme.spacing,
                         children: [
                           NavbarLocationSelector(),
                           NavbarSearchWidget(),

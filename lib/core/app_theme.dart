@@ -18,8 +18,10 @@ class AppTheme {
         textStyle: textTheme.labelLarge?.copyWith(
           fontWeight: FontWeight.w600,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+        shape: SmoothRectangleBorder(
+          borderRadius: SmoothBorderRadius.all(
+            SmoothRadius(cornerRadius: 16, cornerSmoothing: 1),
+          ),
         ),
       ),
     ),
@@ -30,6 +32,7 @@ class AppTheme {
             SmoothRadius(cornerRadius: 12, cornerSmoothing: 1),
           ),
         ),
+        padding: EdgeInsets.zero,
         backgroundColor: Color(0xffC67C4E),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
