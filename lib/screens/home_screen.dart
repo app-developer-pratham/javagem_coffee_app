@@ -21,10 +21,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const double bannerAspectRatio = 2.336;
     final double screenWidth = MediaQuery.sizeOf(context).width;
     final double bannerWidth = screenWidth - (AppTheme.spacing * 2);
-    final double dynamicBannerHeight = bannerWidth / bannerAspectRatio;
+    final double dynamicBannerHeight =
+        bannerWidth / AppTheme.promoBannerAspectRatio;
     // Total bottom clear zone = system home bar inset + nav bar height + breathing margin
     final double bottomInset = MediaQuery.paddingOf(context).bottom;
     final double totalBottomPadding = bottomInset + 90.0 + AppTheme.spacing;
@@ -120,7 +120,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
-                  childAspectRatio: 0.655, // Adjust to fit card dimensions
+                  childAspectRatio: AppTheme
+                      .productCardAspectRatio, // Adjust to fit card dimensions
                 ),
                 itemCount: dummyCoffeeList.length,
                 itemBuilder: (context, index) {
