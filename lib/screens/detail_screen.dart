@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_iconly_plus/iconly.dart';
 import 'package:javagem_coffee_app/core/app_theme.dart';
 import 'package:javagem_coffee_app/models/coffee.dart';
+import 'package:javagem_coffee_app/screens/checkout_screen.dart';
 
 class DetailScreen extends StatefulWidget {
   const DetailScreen({
@@ -410,7 +411,14 @@ class _DetailScreenState extends State<DetailScreen> {
                     // Buy Now CTA (#421:1850)
                     Expanded(
                       child: FilledButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  CheckoutScreen(coffee: widget.coffee),
+                            ),
+                          );
+                        },
                         style: FilledButton.styleFrom(
                           backgroundColor: AppTheme.primaryColor,
                           foregroundColor: AppTheme.surfaceWhiteColor,

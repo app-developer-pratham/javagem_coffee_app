@@ -8,11 +8,13 @@ class AppTheme {
   static const Color primaryLightColor = Color(0xffF9F2ED); // Brown/Light
   static const Color surfaceLightColor = Color(0xffF9F9F9); // Surface/Light
   static const Color surfaceWhiteColor = Color(0xffFFFFFF); // Surface/White
+  static const Color surfaceGreyColor = Color(0xffEDEDED); // Surface/Grey
   static const Color surfaceActiveColor = Color(
     0xffE3E3E3,
   ); // Surface/Light :active
   static const Color textDarkColor = Color(0xff242424); // Grey/Normal :active
   static const Color textHoverColor = Color(0xff2A2A2A); // Grey/Normal :hover
+  static const Color textNormalColor = Color(0xff313131); // Grey/Normal
   static const Color textGreyHoverColor = Color(
     0xff909090,
   ); // Grey/Light :hover
