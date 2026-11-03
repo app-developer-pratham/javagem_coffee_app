@@ -9,36 +9,38 @@ class AppBottomNavigationBar extends StatefulWidget {
     this.currentIndex = 0,
     required this.onTap,
   });
+
   final int currentIndex;
-  final Function(int value) onTap;
+  final ValueChanged<int> onTap;
 
   @override
-  State<AppBottomNavigationBar> createState() => _AppBottomNavigationBarState();
+  State<AppBottomNavigationBar> createState() =>
+      _AppBottomNavigationBarState();
 }
 
 class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
   final List<AppBottomNavigationBarItem> destinations = [
     AppBottomNavigationBarItem(
-      icon: Icon(IconlyLight.home),
-      activeIcon: Icon(IconlyBold.home),
+      icon: const Icon(IconlyLight.home),
+      activeIcon: const Icon(IconlyBold.home),
       index: 0,
       label: 'Home',
     ),
     AppBottomNavigationBarItem(
-      icon: Icon(IconlyLight.heart),
-      activeIcon: Icon(IconlyBold.heart),
+      icon: const Icon(IconlyLight.heart),
+      activeIcon: const Icon(IconlyBold.heart),
       index: 1,
       label: 'Favorite',
     ),
     AppBottomNavigationBarItem(
-      icon: Icon(IconlyLight.bag),
-      activeIcon: Icon(IconlyBold.bag),
+      icon: const Icon(IconlyLight.bag),
+      activeIcon: const Icon(IconlyBold.bag),
       index: 2,
       label: 'Cart',
     ),
     AppBottomNavigationBarItem(
-      icon: Icon(IconlyLight.notification),
-      activeIcon: Icon(IconlyBold.notification),
+      icon: const Icon(IconlyLight.notification),
+      activeIcon: const Icon(IconlyBold.notification),
       index: 3,
       label: 'Notification',
     ),
@@ -48,6 +50,7 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.sizeOf(context);
+
     return Theme(
       data: theme.copyWith(splashFactory: NoSplash.splashFactory),
       child: ClipSmoothRect(
@@ -57,7 +60,7 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
         ),
         child: BottomAppBar(
           padding: EdgeInsets.symmetric(
-            horizontal: size.width * 0.1,
+            horizontal: size.width * 0.08,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -85,7 +88,7 @@ class AppBottomNavigationBarItem {
   final int index;
   final String label;
 
-  new({
+  AppBottomNavigationBarItem({
     required this.icon,
     required this.activeIcon,
     required this.index,

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_iconly_plus/iconly.dart';
 import 'package:javagem_coffee_app/core/app_theme.dart';
+import 'package:javagem_coffee_app/core/app_transitions.dart';
 import 'package:javagem_coffee_app/models/coffee.dart';
+import 'package:javagem_coffee_app/screens/delivery_screen.dart';
 
 typedef OrderScreen = CheckoutScreen;
 
@@ -24,6 +26,12 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   OrderDeliveryMode _deliveryMode = OrderDeliveryMode.deliver;
   int _quantity = 1;
+  String _address = 'Jl. Kpg Sutoyo';
+  String _addressDetail = 'Kpg. Sutoyo No. 620, Bilzen, Tanjungbalai.';
+  String? _note;
+  String _paymentMethod = 'Cash/Wallet';
+  bool _isPlacingOrder = false;
+  String _selectedDiscount = '1 Discount Applied (Promo \$1.00 OFF)';
 
   static const double _originalDeliveryFee = 2.0;
   static const double _discountedDeliveryFee = 1.0;
@@ -36,6 +44,384 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _deliveryMode == OrderDeliveryMode.deliver ? _discountedDeliveryFee : 0.0;
 
   double get _totalPrice => _subtotal + _deliveryFee;
+
+  void _showEditAddressModal() {
+    final controller = TextEditingController(text: _address);
+    final detailController = TextEditingController(text: _addressDetail);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: EdgeInsets.fromLTRB(
+            24,
+            20,
+            24,
+            MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          decoration: const ShapeDecoration(
+            color: Colors.white,
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius.only(
+                topLeft: SmoothRadius(cornerRadius: 24, cornerSmoothing: 0.6),
+                topRight: SmoothRadius(cornerRadius: 24, cornerSmoothing: 0.6),
+              ),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceActiveColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Edit Delivery Address',
+                style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: 'Street Name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: detailController,
+                decoration: InputDecoration(
+                  labelText: 'Full Address Details',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              AppScaleTap(
+                onTap: () {
+                  setState(() {
+                    if (controller.text.isNotEmpty) {
+                      _address = controller.text;
+                    }
+                    if (detailController.text.isNotEmpty) {
+                      _addressDetail = detailController.text;
+                    }
+                  });
+                  Navigator.pop(ctx);
+                },
+                child: FilledButton(
+                  onPressed: () {
+                    setState(() {
+                      if (controller.text.isNotEmpty) {
+                        _address = controller.text;
+                      }
+                      if (detailController.text.isNotEmpty) {
+                        _addressDetail = detailController.text;
+                      }
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Save Address'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddNoteModal() {
+    final noteController = TextEditingController(text: _note ?? '');
+    final quickNotes = [
+      'Less sugar',
+      'Extra hot',
+      'Oat milk preferred',
+      'Leave at door',
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: EdgeInsets.fromLTRB(
+            24,
+            20,
+            24,
+            MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          decoration: const ShapeDecoration(
+            color: Colors.white,
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius.only(
+                topLeft: SmoothRadius(cornerRadius: 24, cornerSmoothing: 0.6),
+                topRight: SmoothRadius(cornerRadius: 24, cornerSmoothing: 0.6),
+              ),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceActiveColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Add Order Note',
+                style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: quickNotes.map((note) {
+                  return ActionChip(
+                    label: Text(note, style: const TextStyle(fontSize: 12)),
+                    onPressed: () {
+                      noteController.text = note;
+                    },
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: noteController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: 'e.g. Please ring bell upon arrival...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              AppScaleTap(
+                onTap: () {
+                  setState(() {
+                    _note = noteController.text.trim().isEmpty
+                        ? null
+                        : noteController.text.trim();
+                  });
+                  Navigator.pop(ctx);
+                },
+                child: FilledButton(
+                  onPressed: () {
+                    setState(() {
+                      _note = noteController.text.trim().isEmpty
+                          ? null
+                          : noteController.text.trim();
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Add Note'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDiscountsModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const ShapeDecoration(
+            color: Colors.white,
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius.only(
+                topLeft: SmoothRadius(cornerRadius: 24, cornerSmoothing: 0.6),
+                topRight: SmoothRadius(cornerRadius: 24, cornerSmoothing: 0.6),
+              ),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceActiveColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Available Discounts',
+                style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(IconlyLight.discount,
+                    color: AppTheme.primaryColor),
+                title: const Text('Promo \$1.00 OFF',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Applied on all coffee delivery'),
+                trailing: const Icon(Icons.check_circle,
+                    color: AppTheme.primaryColor),
+                onTap: () {
+                  setState(() {
+                    _selectedDiscount = '1 Discount Applied (Promo \$1.00 OFF)';
+                  });
+                  Navigator.pop(ctx);
+                },
+              ),
+              ListTile(
+                leading: const Icon(IconlyLight.ticket,
+                    color: AppTheme.primaryColor),
+                title: const Text('WELCOME20',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('20% discount for first time orders'),
+                trailing: const Icon(Icons.circle_outlined),
+                onTap: () {
+                  setState(() {
+                    _selectedDiscount = '20% OFF (WELCOME20)';
+                  });
+                  Navigator.pop(ctx);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPaymentMethodModal() {
+    final methods = [
+      {'name': 'Cash/Wallet', 'subtitle': 'Balance \$48.50', 'icon': IconlyLight.wallet},
+      {'name': 'Apple Pay', 'subtitle': 'Instant checkout', 'icon': Icons.apple},
+      {'name': 'Credit Card', 'subtitle': '•••• 8824', 'icon': Icons.credit_card},
+      {'name': 'Cash on Delivery', 'subtitle': 'Pay at your door', 'icon': Icons.attach_money},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const ShapeDecoration(
+            color: Colors.white,
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius.only(
+                topLeft: SmoothRadius(cornerRadius: 24, cornerSmoothing: 0.6),
+                topRight: SmoothRadius(cornerRadius: 24, cornerSmoothing: 0.6),
+              ),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceActiveColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Select Payment Method',
+                style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              for (final method in methods)
+                ListTile(
+                  leading: Icon(
+                    method['icon'] as IconData,
+                    color: AppTheme.primaryColor,
+                  ),
+                  title: Text(
+                    method['name'] as String,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(method['subtitle'] as String),
+                  trailing: _paymentMethod == method['name']
+                      ? const Icon(Icons.check_circle, color: AppTheme.primaryColor)
+                      : const Icon(Icons.circle_outlined, color: AppTheme.textMutedColor),
+                  onTap: () {
+                    setState(() {
+                      _paymentMethod = method['name'] as String;
+                    });
+                    Navigator.pop(ctx);
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _onOrderPressed() {
+    if (_isPlacingOrder) return;
+
+    setState(() {
+      _isPlacingOrder = true;
+    });
+
+    // Simulate realistic order placement with smooth transition
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        setState(() {
+          _isPlacingOrder = false;
+        });
+        Navigator.of(context).push(
+          AppPageRoute(
+            page: DeliveryScreen(
+              deliveryAddress: _deliveryMode == OrderDeliveryMode.deliver
+                  ? _address
+                  : 'Store Pick Up (Bilzen Branch)',
+            ),
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,12 +490,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             // Deliver / Pick Up Segmented Toggle (327x43, rx 12, padding 4)
                             Container(
                               padding: const EdgeInsets.all(4),
-                              decoration: ShapeDecoration(
+                              decoration: const ShapeDecoration(
                                 color: AppTheme.surfaceGreyColor,
                                 shape: SmoothRectangleBorder(
-                                  borderRadius: SmoothBorderRadius(
-                                    cornerRadius: 12,
-                                    cornerSmoothing: 0.6,
+                                  borderRadius: SmoothBorderRadius.all(
+                                    SmoothRadius(
+                                      cornerRadius: 12,
+                                      cornerSmoothing: 0.6,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -118,8 +506,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   Expanded(
                                     child: _DeliveryTypeTab(
                                       label: 'Deliver',
-                                      isSelected:
-                                          _deliveryMode ==
+                                      isSelected: _deliveryMode ==
                                           OrderDeliveryMode.deliver,
                                       onTap: () {
                                         setState(() {
@@ -132,8 +519,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   Expanded(
                                     child: _DeliveryTypeTab(
                                       label: 'Pick Up',
-                                      isSelected:
-                                          _deliveryMode ==
+                                      isSelected: _deliveryMode ==
                                           OrderDeliveryMode.pickUp,
                                       onTap: () {
                                         setState(() {
@@ -149,36 +535,55 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                             const SizedBox(height: 24),
 
-                            // Delivery Address Section
-                            Text(
-                              _deliveryMode == OrderDeliveryMode.deliver
-                                  ? 'Delivery Address'
-                                  : 'Pick Up Location',
-                              style: textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                height: 1.5,
-                                color: AppTheme.textDarkColor,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Jl. Kpg Sutoyo',
-                              style: textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                                height: 1.5,
-                                color: AppTheme.textNormalColor,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Kpg. Sutoyo No. 620, Bilzen, Tanjungbalai.',
-                              style: textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 12,
-                                height: 1.2,
-                                color: AppTheme.textMutedColor,
+                            // Delivery Address Section with AnimatedSwitcher
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              transitionBuilder: (child, animation) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                );
+                              },
+                              child: Column(
+                                key: ValueKey(_deliveryMode),
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _deliveryMode == OrderDeliveryMode.deliver
+                                        ? 'Delivery Address'
+                                        : 'Pick Up Location',
+                                    style: textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      height: 1.5,
+                                      color: AppTheme.textDarkColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    _deliveryMode == OrderDeliveryMode.deliver
+                                        ? _address
+                                        : 'JavaGem Bilzen Store #01',
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      height: 1.5,
+                                      color: AppTheme.textNormalColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _deliveryMode == OrderDeliveryMode.deliver
+                                        ? _addressDetail
+                                        : 'Kpg. Sutoyo No. 620, Bilzen, Tanjungbalai (Pick up at counter)',
+                                    style: textTheme.bodySmall?.copyWith(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12,
+                                      height: 1.2,
+                                      color: AppTheme.textMutedColor,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -190,13 +595,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               children: [
                                 _AddressActionPill(
                                   icon: IconlyLight.edit_square,
-                                  label: 'Edit Address',
-                                  onTap: () {},
+                                  label: _deliveryMode == OrderDeliveryMode.deliver
+                                      ? 'Edit Address'
+                                      : 'Change Branch',
+                                  onTap: _showEditAddressModal,
                                 ),
                                 _AddressActionPill(
                                   icon: IconlyLight.document,
-                                  label: 'Add Note',
-                                  onTap: () {},
+                                  label: _note == null
+                                      ? 'Add Note'
+                                      : 'Note: $_note',
+                                  onTap: _showAddNoteModal,
                                 ),
                               ],
                             ),
@@ -266,7 +675,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 16),
-                                // Quantity Stepper (- 1 +)
+                                // Quantity Stepper (- 1 +) with AnimatedSwitcher
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -283,14 +692,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     ),
                                     SizedBox(
                                       width: 42,
-                                      child: Text(
-                                        '$_quantity',
-                                        textAlign: TextAlign.center,
-                                        style: textTheme.bodyMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                          height: 1.5,
-                                          color: AppTheme.textHoverColor,
+                                      child: AnimatedSwitcher(
+                                        duration:
+                                            const Duration(milliseconds: 180),
+                                        transitionBuilder: (child, animation) {
+                                          return ScaleTransition(
+                                            scale: animation,
+                                            child: child,
+                                          );
+                                        },
+                                        child: Text(
+                                          '$_quantity',
+                                          key: ValueKey(_quantity),
+                                          textAlign: TextAlign.center,
+                                          style: textTheme.bodyMedium?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
+                                            height: 1.5,
+                                            color: AppTheme.textHoverColor,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -331,53 +751,53 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Discount Banner Card (327x56, rx 16, stroke #EDEDED)
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {},
-                                borderRadius: BorderRadius.circular(16),
-                                child: Container(
-                                  height: 56,
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: ShapeDecoration(
-                                    color: AppTheme.surfaceWhiteColor,
-                                    shape: SmoothRectangleBorder(
-                                      side: const BorderSide(
-                                        color: AppTheme.surfaceGreyColor,
-                                        width: 1,
-                                      ),
-                                      borderRadius: SmoothBorderRadius(
+                            AppScaleTap(
+                              onTap: _showDiscountsModal,
+                              child: Container(
+                                height: 56,
+                                padding: const EdgeInsets.all(16),
+                                decoration: const ShapeDecoration(
+                                  color: AppTheme.surfaceWhiteColor,
+                                  shape: SmoothRectangleBorder(
+                                    side: BorderSide(
+                                      color: AppTheme.surfaceGreyColor,
+                                      width: 1,
+                                    ),
+                                    borderRadius: SmoothBorderRadius.all(
+                                      SmoothRadius(
                                         cornerRadius: 16,
                                         cornerSmoothing: 0.6,
                                       ),
                                     ),
                                   ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        IconlyLight.discount,
-                                        size: 20,
-                                        color: AppTheme.primaryColor,
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Text(
-                                          '1 Discount is Applies',
-                                          style: textTheme.bodyMedium?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                            height: 1.5,
-                                            color: AppTheme.textNormalColor,
-                                          ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      IconlyLight.discount,
+                                      size: 20,
+                                      color: AppTheme.primaryColor,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Text(
+                                        _selectedDiscount,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                          height: 1.5,
+                                          color: AppTheme.textNormalColor,
                                         ),
                                       ),
-                                      const Icon(
-                                        IconlyLight.arrow_right_2,
-                                        size: 20,
-                                        color: AppTheme.textHoverColor,
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    const Icon(
+                                      IconlyLight.arrow_right_2,
+                                      size: 20,
+                                      color: AppTheme.textHoverColor,
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -409,13 +829,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     color: AppTheme.textNormalColor,
                                   ),
                                 ),
-                                Text(
-                                  '\$ ${_subtotal.toStringAsFixed(2)}',
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    height: 1.5,
-                                    color: AppTheme.textDarkColor,
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 180),
+                                  child: Text(
+                                    '\$ ${_subtotal.toStringAsFixed(2)}',
+                                    key: ValueKey(_subtotal),
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      height: 1.5,
+                                      color: AppTheme.textDarkColor,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -456,13 +880,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       ),
                                       const SizedBox(width: 8),
                                     ],
-                                    Text(
-                                      '\$ ${_deliveryFee.toStringAsFixed(1)}',
-                                      style: textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
-                                        height: 1.5,
-                                        color: AppTheme.textDarkColor,
+                                    AnimatedSwitcher(
+                                      duration:
+                                          const Duration(milliseconds: 180),
+                                      child: Text(
+                                        '\$ ${_deliveryFee.toStringAsFixed(1)}',
+                                        key: ValueKey(_deliveryFee),
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                          height: 1.5,
+                                          color: AppTheme.textDarkColor,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -511,78 +940,119 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Payment Method Row (Wallet icon + Cash/Wallet + Total + Chevron)
-                    Row(
-                      children: [
-                        const Icon(
-                          IconlyLight.wallet,
-                          size: 20,
-                          color: AppTheme.primaryColor,
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Cash/Wallet',
-                                style: textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                  height: 1.2,
-                                  color: AppTheme.textDarkColor,
-                                ),
+                    AppScaleTap(
+                      onTap: _showPaymentMethodModal,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        color: Colors.transparent,
+                        child: Row(
+                          children: [
+                            const Icon(
+                              IconlyLight.wallet,
+                              size: 20,
+                              color: AppTheme.primaryColor,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _paymentMethod,
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      height: 1.2,
+                                      color: AppTheme.textDarkColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 180),
+                                    child: Text(
+                                      '\$ ${_totalPrice.toStringAsFixed(2)}',
+                                      key: ValueKey(_totalPrice),
+                                      style: textTheme.bodySmall?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12,
+                                        height: 1.5,
+                                        color: AppTheme.primaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '\$ ${_totalPrice.toStringAsFixed(2)}',
-                                style: textTheme.bodySmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12,
-                                  height: 1.5,
-                                  color: AppTheme.primaryColor,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                            const Icon(
+                              IconlyLight.arrow_down_2,
+                              size: 20,
+                              color: AppTheme.textHoverColor,
+                            ),
+                          ],
                         ),
-                        const Icon(
-                          IconlyLight.arrow_down_2,
-                          size: 20,
-                          color: AppTheme.textHoverColor,
-                        ),
-                      ],
+                      ),
                     ),
                     const SizedBox(height: 12),
 
-                    // Order CTA Button (327x56, rx 16, #C67C4E)
+                    // Order CTA Button (327x56, rx 16, #C67C4E) with Loading State
                     SizedBox(
                       width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {},
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          foregroundColor: AppTheme.surfaceWhiteColor,
-                          minimumSize: const Size.fromHeight(56),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                          shape: SmoothRectangleBorder(
-                            borderRadius: SmoothBorderRadius(
-                              cornerRadius: 16,
-                              cornerSmoothing: 0.6,
+                      child: AppScaleTap(
+                        onTap: _isPlacingOrder ? null : _onOrderPressed,
+                        child: FilledButton(
+                          onPressed: _isPlacingOrder ? null : _onOrderPressed,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: AppTheme.surfaceWhiteColor,
+                            minimumSize: const Size.fromHeight(56),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 16,
+                            ),
+                            shape: const SmoothRectangleBorder(
+                              borderRadius: SmoothBorderRadius.all(
+                                SmoothRadius(
+                                  cornerRadius: 16,
+                                  cornerSmoothing: 0.6,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                        child: Text(
-                          'Order',
-                          style: textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            height: 1.5,
-                            color: AppTheme.surfaceWhiteColor,
-                          ),
+                          child: _isPlacingOrder
+                              ? const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
+                                      ),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Text(
+                                      'Placing Order...',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Text(
+                                  'Order',
+                                  style: textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    height: 1.5,
+                                    color: AppTheme.surfaceWhiteColor,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -640,15 +1110,18 @@ class _DeliveryTypeTab extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
         height: 35,
         alignment: Alignment.center,
         decoration: ShapeDecoration(
           color: isSelected ? AppTheme.primaryColor : Colors.transparent,
-          shape: SmoothRectangleBorder(
-            borderRadius: SmoothBorderRadius(
-              cornerRadius: 8,
-              cornerSmoothing: 0.6,
+          shape: const SmoothRectangleBorder(
+            borderRadius: SmoothBorderRadius.all(
+              SmoothRadius(
+                cornerRadius: 8,
+                cornerSmoothing: 0.6,
+              ),
             ),
           ),
         ),
@@ -682,42 +1155,39 @@ class _AddressActionPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          height: 26,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceWhiteColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppTheme.textMutedColor,
-              width: 1,
-            ),
+    return AppScaleTap(
+      onTap: onTap,
+      scaleDown: 0.94,
+      child: Container(
+        height: 28,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceWhiteColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.surfaceActiveColor,
+            width: 1,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 14,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color: AppTheme.textNormalColor,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w400,
+                fontSize: 12,
+                height: 1.2,
                 color: AppTheme.textNormalColor,
               ),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 12,
-                  height: 1.2,
-                  color: AppTheme.textNormalColor,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -737,31 +1207,29 @@ class _QuantityStepButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: enabled ? onTap : null,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 24,
-          height: 24,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceWhiteColor,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: AppTheme.primaryLightColor,
-              width: 1,
-            ),
+    return AppScaleTap(
+      scaleDown: 0.88,
+      onTap: enabled ? onTap : null,
+      child: Container(
+        width: 26,
+        height: 26,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceWhiteColor,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: enabled
+                ? AppTheme.primaryLightColor
+                : AppTheme.surfaceActiveColor,
+            width: 1,
           ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: enabled ? AppTheme.textHoverColor : AppTheme.textMutedColor,
-          ),
+        ),
+        child: Icon(
+          icon,
+          size: 16,
+          color: enabled ? AppTheme.textHoverColor : AppTheme.textMutedColor,
         ),
       ),
     );
   }
 }
-

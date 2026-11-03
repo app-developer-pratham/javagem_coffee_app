@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_iconly_plus/iconly.dart';
 import 'package:javagem_coffee_app/core/app_theme.dart';
+import 'package:javagem_coffee_app/core/app_transitions.dart';
 import 'package:javagem_coffee_app/models/coffee.dart';
 import 'package:javagem_coffee_app/screens/checkout_screen.dart';
 
@@ -11,9 +12,11 @@ class DetailScreen extends StatefulWidget {
   const DetailScreen({
     super.key,
     required this.coffee,
+    this.heroTag,
   });
 
   final CoffeeItem coffee;
+  final String? heroTag;
 
   @override
   State<DetailScreen> createState() => _DetailScreenState();
@@ -23,11 +26,24 @@ class _DetailScreenState extends State<DetailScreen> {
   CoffeeSize _selectedSize = CoffeeSize.m;
   late bool _isFavorite;
   bool _isDescriptionExpanded = false;
+  double _favoriteScale = 1.0;
 
   @override
   void initState() {
     super.initState();
     _isFavorite = widget.coffee.isFavorite;
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite;
+      _favoriteScale = 1.35;
+    });
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (mounted) {
+        setState(() => _favoriteScale = 1.0);
+      }
+    });
   }
 
   String _sizeLabel(CoffeeSize size) {
@@ -58,6 +74,7 @@ class _DetailScreenState extends State<DetailScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final heroTag = widget.heroTag ?? 'grid-coffee-image-${widget.coffee.id}';
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
@@ -95,18 +112,19 @@ class _DetailScreenState extends State<DetailScreen> {
                         color: AppTheme.textDarkColor,
                       ),
                     ),
-                    _TopActionButton(
-                      onTap: () {
-                        setState(() {
-                          _isFavorite = !_isFavorite;
-                        });
-                      },
-                      icon: Icon(
-                        _isFavorite ? IconlyBold.heart : IconlyLight.heart,
-                        size: 24,
-                        color: _isFavorite
-                            ? AppTheme.primaryColor
-                            : AppTheme.textHoverColor,
+                    AnimatedScale(
+                      scale: _favoriteScale,
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOutBack,
+                      child: _TopActionButton(
+                        onTap: _toggleFavorite,
+                        icon: Icon(
+                          _isFavorite ? IconlyBold.heart : IconlyLight.heart,
+                          size: 24,
+                          color: _isFavorite
+                              ? AppTheme.primaryColor
+                              : AppTheme.textHoverColor,
+                        ),
                       ),
                     ),
                   ],
@@ -126,19 +144,22 @@ class _DetailScreenState extends State<DetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Hero Image (#421:1885: 327x202, radius 16)
-                      AspectRatio(
-                        aspectRatio: AppTheme.detailImageAspectRatio,
-                        child: ClipSmoothRect(
-                          radius: const SmoothBorderRadius.all(
-                            SmoothRadius(
-                              cornerRadius: 16,
-                              cornerSmoothing: 0.6,
+                      Hero(
+                        tag: heroTag,
+                        child: AspectRatio(
+                          aspectRatio: AppTheme.detailImageAspectRatio,
+                          child: ClipSmoothRect(
+                            radius: const SmoothBorderRadius.all(
+                              SmoothRadius(
+                                cornerRadius: 16,
+                                cornerSmoothing: 0.6,
+                              ),
                             ),
-                          ),
-                          child: Image.asset(
-                            widget.coffee.imageUrl,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
+                            child: Image.asset(
+                              widget.coffee.imageUrl,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                       ),
@@ -197,13 +218,11 @@ class _DetailScreenState extends State<DetailScreen> {
                                           TextSpan(
                                             text:
                                                 '(${widget.coffee.reviewCount})',
-                                            style: textTheme.bodySmall
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w400,
-                                                  fontSize: 12,
-                                                  color:
-                                                      AppTheme.textMutedColor,
-                                                ),
+                                            style: textTheme.bodySmall?.copyWith(
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 12,
+                                              color: AppTheme.textMutedColor,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -232,12 +251,14 @@ class _DetailScreenState extends State<DetailScreen> {
                                   width: 44,
                                   height: 44,
                                   alignment: Alignment.center,
-                                  decoration: ShapeDecoration(
+                                  decoration: const ShapeDecoration(
                                     color: AppTheme.iconBadgeBgColor,
                                     shape: SmoothRectangleBorder(
-                                      borderRadius: SmoothBorderRadius(
-                                        cornerRadius: 12,
-                                        cornerSmoothing: 0.6,
+                                      borderRadius: SmoothBorderRadius.all(
+                                        SmoothRadius(
+                                          cornerRadius: 12,
+                                          cornerSmoothing: 0.6,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -266,7 +287,7 @@ class _DetailScreenState extends State<DetailScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Description Section (#421:1861)
+                      // Description Section (#421:1861) with AnimatedSize
                       Text(
                         'Description',
                         style: textTheme.titleMedium?.copyWith(
@@ -277,39 +298,44 @@ class _DetailScreenState extends State<DetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      RichText(
-                        text: TextSpan(
-                          style: textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w300,
-                            fontSize: 14,
-                            height: 1.5,
-                            color: AppTheme.textMutedColor,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: _isDescriptionExpanded
-                                  ? '${widget.coffee.description} Crafted with carefully roasted 100% Arabica beans and steamed milk for a smooth, velvety finish. '
-                                  : '${widget.coffee.description} ',
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOutCubic,
+                        alignment: Alignment.topLeft,
+                        child: RichText(
+                          text: TextSpan(
+                            style: textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w300,
+                              fontSize: 14,
+                              height: 1.5,
+                              color: AppTheme.textMutedColor,
                             ),
-                            TextSpan(
-                              text: _isDescriptionExpanded
-                                  ? 'Read Less'
-                                  : 'Read More',
-                              style: textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                                height: 1.5,
-                                color: AppTheme.primaryColor,
+                            children: [
+                              TextSpan(
+                                text: _isDescriptionExpanded
+                                    ? '${widget.coffee.description} Crafted with carefully roasted 100% Arabica beans and steamed milk for a smooth, velvety finish. '
+                                    : '${widget.coffee.description} ',
                               ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  setState(() {
-                                    _isDescriptionExpanded =
-                                        !_isDescriptionExpanded;
-                                  });
-                                },
-                            ),
-                          ],
+                              TextSpan(
+                                text: _isDescriptionExpanded
+                                    ? 'Read Less'
+                                    : 'Read More',
+                                style: textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  height: 1.5,
+                                  color: AppTheme.primaryColor,
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    setState(() {
+                                      _isDescriptionExpanded =
+                                          !_isDescriptionExpanded;
+                                    });
+                                  },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
 
@@ -331,14 +357,22 @@ class _DetailScreenState extends State<DetailScreen> {
                         children: [
                           for (final size in widget.coffee.availableSizes)
                             Expanded(
-                              child: _SizeChoiceButton(
-                                label: _sizeLabel(size),
-                                isSelected: _selectedSize == size,
+                              child: AppScaleTap(
+                                scaleDown: 0.94,
                                 onTap: () {
                                   setState(() {
                                     _selectedSize = size;
                                   });
                                 },
+                                child: _SizeChoiceButton(
+                                  label: _sizeLabel(size),
+                                  isSelected: _selectedSize == size,
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedSize = size;
+                                    });
+                                  },
+                                ),
                               ),
                             ),
                         ],
@@ -410,37 +444,47 @@ class _DetailScreenState extends State<DetailScreen> {
 
                     // Buy Now CTA (#421:1850)
                     Expanded(
-                      child: FilledButton(
-                        onPressed: () {
+                      child: AppScaleTap(
+                        onTap: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  CheckoutScreen(coffee: widget.coffee),
+                            AppPageRoute(
+                              page: CheckoutScreen(coffee: widget.coffee),
                             ),
                           );
                         },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          foregroundColor: AppTheme.surfaceWhiteColor,
-                          minimumSize: const Size.fromHeight(56),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                          shape: SmoothRectangleBorder(
-                            borderRadius: SmoothBorderRadius(
-                              cornerRadius: 16,
-                              cornerSmoothing: 0.6,
+                        child: FilledButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              AppPageRoute(
+                                page: CheckoutScreen(coffee: widget.coffee),
+                              ),
+                            );
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: AppTheme.surfaceWhiteColor,
+                            minimumSize: const Size.fromHeight(56),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 16,
+                            ),
+                            shape: const SmoothRectangleBorder(
+                              borderRadius: SmoothBorderRadius.all(
+                                SmoothRadius(
+                                  cornerRadius: 16,
+                                  cornerSmoothing: 0.6,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                        child: Text(
-                          'Buy Now',
-                          style: textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            height: 1.5,
-                            color: AppTheme.surfaceWhiteColor,
+                          child: Text(
+                            'Buy Now',
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              height: 1.5,
+                              color: AppTheme.surfaceWhiteColor,
+                            ),
                           ),
                         ),
                       ),
@@ -495,43 +539,37 @@ class _SizeChoiceButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          height: 41,
-          alignment: Alignment.center,
-          decoration: ShapeDecoration(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+      height: 41,
+      alignment: Alignment.center,
+      decoration: ShapeDecoration(
+        color: isSelected
+            ? AppTheme.primaryLightColor
+            : AppTheme.surfaceWhiteColor,
+        shape: SmoothRectangleBorder(
+          side: BorderSide(
             color: isSelected
-                ? AppTheme.primaryLightColor
-                : AppTheme.surfaceWhiteColor,
-            shape: SmoothRectangleBorder(
-              side: BorderSide(
-                color: isSelected
-                    ? AppTheme.primaryColor
-                    : AppTheme.surfaceActiveColor,
-                width: 1,
-              ),
-              borderRadius: SmoothBorderRadius(
-                cornerRadius: 12,
-                cornerSmoothing: 0.6,
-              ),
+                ? AppTheme.primaryColor
+                : AppTheme.surfaceActiveColor,
+            width: isSelected ? 1.5 : 1,
+          ),
+          borderRadius: const SmoothBorderRadius.all(
+            SmoothRadius(
+              cornerRadius: 12,
+              cornerSmoothing: 0.6,
             ),
           ),
-          child: Text(
-            label,
-            style: textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w400,
-              fontSize: 14,
-              height: 1.5,
-              color: isSelected
-                  ? AppTheme.primaryColor
-                  : AppTheme.textDarkColor,
-            ),
-          ),
+        ),
+      ),
+      child: Text(
+        label,
+        style: textTheme.bodyMedium?.copyWith(
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          fontSize: 14,
+          height: 1.5,
+          color: isSelected ? AppTheme.primaryColor : AppTheme.textDarkColor,
         ),
       ),
     );

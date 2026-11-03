@@ -1,8 +1,8 @@
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly_plus/iconly.dart';
 import 'package:javagem_coffee_app/core/app_theme.dart';
+import 'package:javagem_coffee_app/core/app_transitions.dart';
 import 'package:javagem_coffee_app/models/coffee.dart';
 import 'package:javagem_coffee_app/screens/detail_screen.dart';
 
@@ -10,14 +10,30 @@ class CoffeeCard extends StatelessWidget {
   const CoffeeCard({
     super.key,
     required this.coffee,
+    this.heroPrefix = 'grid',
   });
+
   final CoffeeItem coffee;
+  final String heroPrefix;
+
+  void _navigateToDetail(BuildContext context) {
+    Navigator.of(context).push(
+      AppPageRoute(
+        page: DetailScreen(
+          coffee: coffee,
+          heroTag: '$heroPrefix-coffee-image-${coffee.id}',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     const double cornerSmoothing = 1;
     const double cornerRadius = 16;
     final size = MediaQuery.sizeOf(context);
     final textTheme = Theme.of(context).textTheme;
+
     return CupertinoContextMenu.builder(
       actions: [
         CupertinoContextMenuAction(
@@ -42,14 +58,9 @@ class CoffeeCard extends StatelessWidget {
         ),
       ],
       builder: (context, animation) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => DetailScreen(coffee: coffee),
-              ),
-            );
-          },
+        return AppScaleTap(
+          onTap: () => _navigateToDetail(context),
+          scaleDown: 0.97,
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: size.width * 0.45,
@@ -57,14 +68,23 @@ class CoffeeCard extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: AppTheme.productCardAspectRatio,
               child: Container(
-                decoration: ShapeDecoration(
+                decoration: const ShapeDecoration(
                   color: Colors.white,
                   shape: SmoothRectangleBorder(
-                    borderRadius: SmoothBorderRadius(
-                      cornerRadius: cornerRadius,
-                      cornerSmoothing: cornerSmoothing,
+                    borderRadius: SmoothBorderRadius.all(
+                      SmoothRadius(
+                        cornerRadius: cornerRadius,
+                        cornerSmoothing: cornerSmoothing,
+                      ),
                     ),
                   ),
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x08000000),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
                 ),
                 margin: EdgeInsets.zero,
                 child: Padding(
@@ -72,18 +92,22 @@ class CoffeeCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AspectRatio(
-                        aspectRatio: 1.1,
-                        child: ClipSmoothRect(
-                          radius: SmoothBorderRadius.all(
-                            SmoothRadius(
-                              cornerRadius: cornerRadius,
-                              cornerSmoothing: cornerSmoothing,
+                      // Hero Coffee Image
+                      Hero(
+                        tag: '$heroPrefix-coffee-image-${coffee.id}',
+                        child: AspectRatio(
+                          aspectRatio: 1.1,
+                          child: ClipSmoothRect(
+                            radius: const SmoothBorderRadius.all(
+                              SmoothRadius(
+                                cornerRadius: cornerRadius,
+                                cornerSmoothing: cornerSmoothing,
+                              ),
                             ),
-                          ),
-                          child: Image.asset(
-                            coffee.imageUrl,
-                            fit: BoxFit.cover,
+                            child: Image.asset(
+                              coffee.imageUrl,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                       ),
@@ -91,9 +115,7 @@ class CoffeeCard extends StatelessWidget {
                         child: LayoutBuilder(
                           builder: (context, constraints) {
                             return Padding(
-                              padding: EdgeInsets.only(
-                                top: 8,
-                              ),
+                              padding: const EdgeInsets.only(top: 8),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -129,7 +151,7 @@ class CoffeeCard extends StatelessWidget {
                                     children: [
                                       Flexible(
                                         child: Text(
-                                          "\$${coffee.price}",
+                                          "\$${coffee.price.toStringAsFixed(2)}",
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: textTheme.titleLarge?.copyWith(
@@ -139,24 +161,28 @@ class CoffeeCard extends StatelessWidget {
                                           ),
                                         ),
                                       ),
-                                      IconButton(
-                                        style: IconButton.styleFrom(
-                                          fixedSize: Size.square(
-                                            constraints.maxHeight * 0.40,
-                                          ),
-                                        ),
-                                        iconSize: constraints.maxHeight * 0.2,
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  DetailScreen(coffee: coffee),
+                                      AppScaleTap(
+                                        scaleDown: 0.90,
+                                        onTap: () => _navigateToDetail(context),
+                                        child: Container(
+                                          width: constraints.maxHeight * 0.40,
+                                          height: constraints.maxHeight * 0.40,
+                                          decoration: const ShapeDecoration(
+                                            color: AppTheme.primaryColor,
+                                            shape: SmoothRectangleBorder(
+                                              borderRadius: SmoothBorderRadius.all(
+                                                SmoothRadius(
+                                                  cornerRadius: 10,
+                                                  cornerSmoothing: 1.0,
+                                                ),
+                                              ),
                                             ),
-                                          );
-                                        },
-                                        icon: const Icon(
-                                          Icons.add,
-                                          color: Colors.white,
+                                          ),
+                                          child: const Icon(
+                                            Icons.add,
+                                            color: Colors.white,
+                                            size: 18,
+                                          ),
                                         ),
                                       ),
                                     ],
